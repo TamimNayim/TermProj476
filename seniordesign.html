@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyPass Password Manager</title>
+  <style>
+    /* General Styles */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #1e3c72, #2a5298); /* Professional gradient background */
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h2 {
+      margin-top: 20px;
+      font-size: 2rem;
+    }
+
+    div {
+      background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent container background */
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    select, input {
+      width: calc(100% - 20px);
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .confirmation {
+      color: #4caf50;
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    p {
+      word-wrap: break-word;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>MyPass Password Manager</h2>
+
+  <!-- Registration Form -->
+  <div id="registrationPage">
+    <h3>Register</h3>
+    <label>Email:</label>
+    <input type="email" id="email"><br>
+    <label>Master Password:</label>
+    <input type="password" id="masterPassword"><br>
+
+    <!-- Security Questions -->
+    <label>Security Question 1:</label>
+    <select id="question1">
+      <option value="What is your pet's name?">What is your pet's name?</option>
+      <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+      <option value="What is your favorite color?">What is your favorite color?</option>
+    </select>
+    <label>Answer 1:</label>
+    <input type="text" id="answer1"><br>
+
+    <label>Security Question 2:</label>
+    <select id="question2">
+      <option value="What was the name of your first school?">What was the name of your first school?</option>
+      <option value="What is your favorite food?">What is your favorite food?</option>
+      <option value="What is the name of your best friend?">What is the name of your best friend?</option>
+    </select>
+    <label>Answer 2:</label>
+    <input type="text" id="answer2"><br>
+
+    <label>Security Question 3:</label>
+    <select id="question3">
+      <option value="What city were you born in?">What city were you born in?</option>
+      <option value="What is your favorite movie?">What is your favorite movie?</option>
+      <option value="What is your favorite sport?">What is your favorite sport?</option>
+    </select>
+    <label>Answer 3:</label>
+    <input type="text" id="answer3"><br>
+
+    <button onclick="register()">Register</button>
+    <p id="registrationConfirmation" class="confirmation"></p>
+  </div>
+
+  <!-- Password Generator -->
+  <div id="passwordGeneratorPage" class="hidden">
+    <h3>Generate Password</h3>
+    <label>Password Length:</label>
+    <input type="number" id="passwordLength" value="12"><br>
+    <label><input type="checkbox" id="includeUppercase"> Include Uppercase</label><br>
+    <label><input type="checkbox" id="includeNumbers"> Include Numbers</label><br>
+    <label><input type="checkbox" id="includeSymbols"> Include Symbols</label><br>
+    <button onclick="generatePassword()">Generate Password</button>
+    <p id="generatedPassword"></p>
+  </div>
+
+  <!-- JavaScript Code -->
+  <script>
+    // Singleton Pattern for Session Management
+    class SessionManager {
+      constructor() {
+        if (SessionManager.instance) {
+          return SessionManager.instance;
+        }
+        this.isLoggedIn = false;
+        this.userData = {};
+        SessionManager.instance = this;
+      }
+
+      login(userData) {
+        this.isLoggedIn = true;
+        this.userData = userData;
+        console.log("User logged in:", this.userData.email);
+      }
+
+      logout() {
+        this.isLoggedIn = false;
+        this.userData = {};
+        console.log("User logged out");
+      }
+
+      getSessionData() {
+        return this.userData;
+      }
+    }
+
+    // Registration function
+    function register() {
+      const email = document.getElementById("email").value;
+      const masterPassword = document.getElementById("masterPassword").value;
+      const question1 = document.getElementById("question1").value;
+      const answer1 = document.getElementById("answer1").value;
+      const question2 = document.getElementById("question2").value;
+      const answer2 = document.getElementById("answer2").value;
+      const question3 = document.getElementById("question3").value;
+      const answer3 = document.getElementById("answer3").value;
+
+      if (email && masterPassword && question1 && answer1 && question2 && answer2 && question3 && answer3) {
+        const session = new SessionManager();
+        session.login({
+          email: email,
+          masterPassword: masterPassword,
+          securityQuestions: [
+            { question: question1, answer: answer1 },
+            { question: question2, answer: answer2 },
+            { question: question3, answer: answer3 }
+          ]
+        });
+
+        const confirmationMessage = `Registration successful for ${email}!`;
+        document.getElementById("registrationConfirmation").innerText = confirmationMessage;
+        console.log(confirmationMessage);
+
+        // Show the password generator page and hide the registration page
+        document.getElementById("registrationPage").classList.add("hidden");
+        document.getElementById("passwordGeneratorPage").classList.remove("hidden");
+      } else {
+        document.getElementById("registrationConfirmation").innerText = "Please fill out all fields.";
+        console.log("Registration failed: Missing fields.");
+      }
+    }
+
+    // Password Generator function
+    function generatePassword() {
+      const length = parseInt(document.getElementById("passwordLength").value);
+      const includeUppercase = document.getElementById("includeUppercase").checked;
+      const includeNumbers = document.getElementById("includeNumbers").checked;
+      const includeSymbols = document.getElementById("includeSymbols").checked;
+
+      const builder = new PasswordBuilder().setLength(length);
+      if (includeUppercase) builder.addUppercase();
+      if (includeNumbers) builder.addNumbers();
+      if (includeSymbols) builder.addSymbols();
+
+      const password = builder.build();
+      document.getElementById("generatedPassword").innerText = "Generated Password: " + password;
+    }
+
+    // Builder Pattern for Password Generation
+    class PasswordBuilder {
+      constructor() {
+        this.length = 12;
+        this.includeUppercase = true;
+        this.includeNumbers = true;
+        this.includeSymbols = false;
+      }
+
+      setLength(length) {
+        this.length = length;
+        return this;
+      }
+
+      addUppercase() {
+        this.includeUppercase = true;
+        return this;
+      }
+
+      addNumbers() {
+        this.includeNumbers = true;
+        return this;
+      }
+
+      addSymbols() {
+        this.includeSymbols = true;
+        return this;
+      }
+
+      build() {
+        const lower = "abcdefghijklmnopqrstuvwxyz";
+        const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const numbers = "0123456789";
+        const symbols = "!@#$%^&*()_+";
+
+        let characters = lower;
+        if (this.includeUppercase) characters += upper;
+        if (this.includeNumbers) characters += numbers;
+        if (this.includeSymbols) characters += symbols;
+
+        let password = "";
+        for (let i = 0; i < this.length; i++) {
+          password += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return password;
+      }
+    }
+  </script>
+</body>
+</html>
